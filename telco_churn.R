@@ -10,6 +10,7 @@ length(complete.cases(monthly_customers))
 churn_count = sum(churn == 'Yes')
 churn_ratio = churn_count / length(churn)
 
+#numeric vars for modeling
 monthly_customers$churn <- ifelse(churn=='Yes',1,0)
 monthly_customers$gender <- ifelse(gender=='Male',1,0)
 monthly_customers$partner <- ifelse(partner=='Yes',1,0)
@@ -17,14 +18,14 @@ monthly_customers$dependents <- ifelse(dependents=='Yes',1,0)
 
 library(fastDummies)
 #create dummy variables for categorical vars with 3+ categories
-monthly_customers <- dummy_cols(monthly_customers, select_columns = 'payment_type')
-monthly_customers <- dummy_cols(monthly_customers, select_columns = 'phone_service')
-monthly_customers <- dummy_cols(monthly_customers, select_columns = 'internet_service')
+monthly_customers <- dummy_cols(monthly_customers,
+              select_columns = c('payment_type','phone_service','internet_service'))
 
 #drop extra dummy vars
 monthly_customers <- subset(monthly_customers, select = -c(5:7, 14, 17, 20))
-#feature engineering
-monthly_customers$tenure <- total_charges/monthly_charges
+#feature engineering tenure
+#not exact since monthly charges change
+monthly_customers$tenure <- as.integer(total_charges/monthly_charges)
 #analysis showed gender, dependents, bank or cc transfer,
 #and partnered aren't significant
 #tenure made charges irrelevant
