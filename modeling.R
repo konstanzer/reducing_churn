@@ -3,14 +3,17 @@ telco <- telco[complete.cases(telco),]
 telco <- subset(telco, Contract == 'Month-to-month')
 colnames(telco)
 telco <- telco[,-c(16)]
-#telco$Churn <- ifelse(telco$Churn=='Yes',1,0)
-#churn_ratio = sum(telco$Churn)/length(telco$Churn) #43%
 
-#I'm using Faraz Rahman's Kaggle notebook: https://www.kaggle.com/farazrahman/telco-customer-churn-logisticregression
+telco$Churn <- ifelse(telco$Churn=='Yes',1,0)
+churners = sum(telco$Churn)
+churn_ratio = churners/length(telco$Churn)#43%
+
+#Kaggle notebook: https://www.kaggle.com/farazrahman/telco-customer-churn-logisticregression
 library(ggplot2)
 ggplot(telco, aes(y=tenure, x=Churn)) + geom_boxplot()
 ggplot(telco, aes(y=MonthlyCharges, x=Churn)) + geom_boxplot()
 ggplot(telco, aes(y=TotalCharges, x=Churn)) + geom_boxplot()
+
 
 #Clean categorical features
 telco <- data.frame(lapply(telco, function(x) {
@@ -78,7 +81,6 @@ pred_churn <- factor(ifelse(pred >= 0.50, "Yes", "No"))
 actual_churn <- factor(ifelse(val$Churn_Yes==1,"Yes","No"))
 table(actual_churn,pred_churn)
 
-
 #Decision tree
 library(rpart)
 library(rpart.plot)
@@ -92,4 +94,49 @@ rpart.plot(Dtree)
 #Predicting 
 DTPred <- predict(Dtree,type = "class", newdata = val)
 table(val$Churn_Yes, DTPred)
+(377+147)/775
 
+
+#Fiber optic only
+#Customers churn at a high rate the first month regardless of price
+#We don't care about them, they'll eave anyway
+fiber<-subset(final, InternetService_Fiber.optic == 1) #& tenure > -.85)
+dsl<-subset(final, InternetService_Fiber.optic == 0 & InternetService_No == 0)
+
+sum(dsl$Churn_Yes==1)
+394/1223
+
+length(fiber$Churn_Yes==1)
+1162/2128
+#685 new customers
+2128*.322
+
+#all internet customers
+(394+1162)/(2128+1223)
+(394+1162-685)/(2128+1223)
+(churners-685)/3875
+
+internet <- subset(telco,telco$InternetService == 'DSL')
+mean(internet$MonthlyCharges)*685
+2128*18
+
+1694/5
+ix = 1:340
+val = fiber[ix,]
+train = fiber[-ix,]
+
+glm.fit = glm(Churn_Yes ~ MonthlyCharges + MonthlyCharges*tenure +
+                tenure, data=train, family='binomial')
+summary(glm.fit)
+preds=predict(glm.fit, val) > .5
+table(preds, val$Churn)
+(158+50)/340
+
+
+library(ggplot2)
+ggplot(fiber, aes(x=MonthlyCharges, y=Churn_Yes)) + geom_point() + 
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+par(mar = c(4, 4, 1, 1)) # Reduce some of the margins so that the plot fits better
+plot(fiber$tenure, fiber$Churn_Yes)
+curve(predict(glm.fit, data.frame(tenure=x), type="response"), add=TRUE) 
