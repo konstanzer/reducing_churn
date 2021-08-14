@@ -1,4 +1,6 @@
-from src.acquire import get_telco_data
+try: from src.acquire import get_telco_data
+except: from acquire import get_telco_data
+    
 import pandas as pd
 import numpy as np
 
@@ -30,5 +32,6 @@ if __name__ == '__main__':
     
     df = telco_model_prep()
     print(df.head())
+    df.to_csv("telco_numeric.csv")
     
     

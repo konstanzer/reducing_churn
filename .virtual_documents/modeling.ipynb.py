@@ -56,8 +56,8 @@ def calc_vif(X):
 calc_vif(telco_df)
 
 
-telco_df = telco_df.drop(['MonthlyCharges', 'StreamingTV_Yes',
-                          'TotalCharges', 'InternetService_No', 'Contract_Two_year'], axis=1)
+telco_df = telco_df.drop(['MonthlyCharges', 'StreamingTV_Yes', 'PhoneService_Yes',
+                          'TotalCharges', 'InternetService_No'], axis=1)
 
 
 calc_vif(telco_df)
