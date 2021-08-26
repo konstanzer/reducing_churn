@@ -6,7 +6,6 @@ import numpy as np
 def telco_model_prep():
     
     telco = get_telco_data()
-    telco = telco.drop(['gender', 'phone_service'], axis=1)
     cid = telco.pop("customer_id")
     
     #before making total charges a float, eliminate this annoying space
@@ -87,29 +86,6 @@ def telco_eda_prep():
     telco = telco.rename(columns={"payment_type_id": "payment_method",
                                   "contract_type_id": "contract",
                                   'internet_service_type_id': "internet_service"})
-    
-    return telco
-
-
-def telco_model_prep_kaggle():
-    
-    telco = get_telco_data()
-    
-    telco = telco.drop(['customerID'], axis=1)
-    
-    #before making total charges a float, eliminate this annoying space
-    telco = telco.replace(" ", 0)
-    
-    telco = telco.replace("No internet service", "No")
-    telco = telco.replace("No phone service", "No")
-    
-    telco = telco.astype({'TotalCharges': np.float})
-    
-    #to prevent pesky spaces in column names
-    telco = telco.replace(" ", "_", regex=True)
-    
-    #conver all 15 object types into dummies
-    telco = pd.get_dummies(telco, drop_first=True)
     
     return telco
 

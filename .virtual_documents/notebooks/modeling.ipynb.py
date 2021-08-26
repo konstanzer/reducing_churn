@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from src.prepare import telco_model_prep
+from src.helper_functions import plot_corr, calc_vif, output_preds
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
