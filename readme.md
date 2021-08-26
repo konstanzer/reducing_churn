@@ -1,5 +1,3 @@
-# TELCO
-
 ![](img/logo.png)
 
 ---
@@ -13,7 +11,9 @@
   - [Recommendations](#recommendations)
   - [Acknowledgements](#acknowledgements)
   
-  
+
+![](img/mind_blown.gif)
+
 ## Introduction
 
 The Data Dictionary

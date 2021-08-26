@@ -24,7 +24,6 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import RidgeClassifierCV
 from sklearn.linear_model import SGDClassifier
 
 import eli5
@@ -37,56 +36,47 @@ df.info()
 df.head()
 
 
+churn = df.pop("churn")
+
+
 plt.figure(figsize=(9,7))
-corr_mat = df.corr()
-np.fill_diagonal(corr_mat.values, 0) #we don't care about self-correlation
-sns.heatmap(corr_mat);
+corr = df.corr()
+sns.heatmap(corr, mask=np.triu(corr), annot=True);
 
 
 def calc_vif(X):
     # Calculating VIF
     vif = pd.DataFrame()
     vif["variables"] = X.columns
-    vif["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+    vif["VIF"] = [round(variance_inflation_factor(X.values, i),1) for i in range(X.shape[1])]
     return(vif)
 
 
 calc_vif(df.iloc[:,1:])
 
 
-df['streaming'] =  (df.streaming_movies + df.streaming_tv > 0).astype(int)
-df = df.drop(['monthly_charges', 'total_charges', 'streaming_movies', 'streaming_tv'], axis=1)
+#df['streaming'] =  (df.streaming_movies + df.streaming_tv > 0).astype(int)
+df = df.drop(['monthly_charges', 'total_charges'], axis=1)
 
 
 calc_vif(df.iloc[:,1:])
 
 
 plt.figure(figsize=(9,7))
-corr_mat = df.corr()
-np.fill_diagonal(corr_mat.values, 0) #we don't care about self-corralation
-sns.heatmap(corr_mat);
+corr = df.corr()
+sns.heatmap(corr, mask=np.triu(corr), annot=True);
 
 
-churn = df.pop("churn")
-
-
-#make a test set before scaling or oversampling the data
 X_train, X_test, y_train, y_test = train_test_split(df, churn, test_size=.1,
                                                     random_state=36, stratify=churn)
-#divide X_train and y_train into training and validation sets
-#make val before oversampling so test and val come from the ame distribution
+X_train.pop("customer_id")
+cid = X_test.pop("customer_id") #needed for output file
+#make val before oversampling so test and val come from the same distribution
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=1/9,
                                                     random_state=36, stratify=y_train)
-#churn is the minority class
-churn.value_counts()
 
 
-cid = X_test.pop("customer_id")
-X_val.pop("customer_id")
-X_train.pop("customer_id")
-
-
-#synthetic kNN training data
+#synthetic training data made with kNN algorithm
 X_smote, y_smote = SMOTE(random_state=36).fit_resample(X_train, y_train)
 y_smote.value_counts() #oversampling the churn class
 
@@ -104,9 +94,8 @@ scores_in, scores_out = [], []
 k_values = range(1,31)
 
 for k in k_values:
-    knn = make_pipeline(StandardScaler(),
-                        KNeighborsClassifier(n_neighbors=k, weights='uniform'))
-    knn.fit(X_train, y_train)
+    knn = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_smote, y_smote)
     scores_in.append(knn.score(X_train, y_train))
     scores_out.append(knn.score(X_val, y_val))                 
 
@@ -120,15 +109,14 @@ plt.legend(["train","dev"])
 plt.title("kNN accuracy on training & validation sets for different values k");
 
 
-knn = make_pipeline(StandardScaler(),
-                        KNeighborsClassifier(n_neighbors=25, weights='uniform'))
+k=20
+knn = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=k))
 knn.fit(X_train, y_train)
 print(classification_report(y_val, knn.predict(X_val)))
 
 
 #SMOTE data increases correct churn predictions and non-churn errors equally, I prefer this model over the one above but accuracy is too low
-knn = make_pipeline(StandardScaler(),
-                        KNeighborsClassifier(n_neighbors=25, weights='uniform'))
+knn = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=k))
 knn.fit(X_smote, y_smote)
 print(classification_report(y_val, knn.predict(X_val)))
 
@@ -156,7 +144,7 @@ rf.fit(X_train, y_train)
 print(classification_report(y_val, rf.predict(X_val)))
 
 
-alphas = np.array(range(0, 600, 40))/10000
+alphas = np.array(range(0, 480, 40))/10000
 
 for a in alphas:
     rf = RandomForestClassifier(ccp_alpha=a, random_state=36)
@@ -167,12 +155,11 @@ for a in alphas:
     accuracy: {round(accuracy_score(y_val, y_pred),2)}")    
 
 
-rf = RandomForestClassifier(ccp_alpha=.028, random_state=36).fit(X_smote, y_smote)
+alpha = .036
+
+rf = RandomForestClassifier(ccp_alpha=alpha, random_state=36).fit(X_smote, y_smote)
 y_pred = rf.predict(X_val)
 print(classification_report(y_val, rf.predict(X_val)))
-
-
-sum(y_pred), len(y_pred)
 
 
 #ranked importance based on Gini index
@@ -180,17 +167,20 @@ eli5.show_weights(rf, feature_names=list(X_val.columns))
 
 
 #output predictions
-y_pred = rf.predict(X_test)
-y_proba = rf.predict_proba(X_test)
+def output_preds(model):
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+    print(f"{model}, \n    recall: {round(recall_score(y_test, y_pred),2)},\n\
+    precision: {round(precision_score(y_test, y_pred),2)},\n\
+    accuracy: {round(accuracy_score(y_test, y_pred),2)}") 
+    print(f"\n customers: {len(y_test)}, predicted to churn: {sum(y_pred)}, did churn: {sum(y_test)}")
+    output = pd.concat([cid.reset_index(drop=True),
+                        pd.Series(np.round(y_proba[:,1], 3), name="probability"),
+                        pd.Series(y_pred, name="label")], axis=1)
+    output.to_csv(f'{model}_predictions.csv', index=False)
 
-output = pd.concat([cid.reset_index(drop=True),
-                    pd.Series(np.round(y_proba[:,1], 3),name="probability"),
-                    pd.Series(y_pred, name="label")], axis=1)
-output.to_csv('predictions.csv', index=False)
-output
 
-
-np.mean(y_pred == y_test)
+output_preds(rf)
 
 
 #wasn't converging at first because of collinearity

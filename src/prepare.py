@@ -6,7 +6,7 @@ import numpy as np
 def telco_model_prep():
     
     telco = get_telco_data()
-    
+    telco = telco.drop(['gender', 'phone_service'], axis=1)
     cid = telco.pop("customer_id")
     
     #before making total charges a float, eliminate this annoying space
@@ -55,7 +55,7 @@ def telco_eda_prep():
     
     telco = get_telco_data()
     
-    telco = telco.drop(['customer_id', 'senior_citizen', 'gender'], axis=1)
+    telco = telco.drop(['customer_id'], axis=1)
     
     #before making total charges a float, eliminate this annoying space
     telco = telco.replace(" ", 0)
@@ -81,6 +81,8 @@ def telco_eda_prep():
     telco.contract_type_id.loc[telco.contract_type_id==3] = "2-year"
     
     telco.payment_type_id.loc[telco.payment_type_id==4] = "credit card"
+    
+    telco['monthly_charges_bins'] = pd.qcut(telco.monthly_charges, 10)
     
     telco = telco.rename(columns={"payment_type_id": "payment_method",
                                   "contract_type_id": "contract",

@@ -16,31 +16,50 @@ df.info()
 df.head()
 
 
-f=plt.subplots(figsize=(9,6))
-ax=sns.histplot(data=df, x='InternetService', hue='Churn', palette='hot_r', stat='count', )
-ax.set_xlabel("Plan")
+
+
+
+
+
+
+sns.set(style="darkgrid")
+
+f=plt.subplots(figsize=(4,6))
+ax=sns.countplot(data=df, x='internet_service', hue='churn', order=['fiber optic','DSL','none'])
+ax.set_ylabel('')    
+ax.set_xlabel('')
 ax.set_title("Churn by Internet Service");
 
 
 df.Contract.value_counts()
 
 
-f=plt.subplots(figsize=(9,6))
-ax=sns.histplot(data=df, x='Contract', hue='Churn', palette='hot_r')
-ax.set_xlabel("Plan")
+f=plt.subplots(figsize=(4,6))
+ax=sns.countplot(data=df, x='contract', hue='churn', order=['month-to-month','1-year','2-year'])
+ax.set_ylabel('')    
+ax.set_xlabel('')
 ax.set_title("Churn by Contract Type");
 
 
-f=plt.subplots(figsize=(9,6))
-ax=sns.histplot(data=df, x='PaymentMethod', hue='Churn', palette='hot_r')
-ax.set_xlabel("Method")
+f=plt.subplots(figsize=(5,6))
+ax=sns.countplot(data=df, x='payment_method', hue='churn', order=['e-check','check','bank transfer', 'credit card'])
+ax.set_ylabel('')    
+ax.set_xlabel('')
 ax.set_title("Churn by Payment Method");
 
 
-f=plt.subplots(figsize=(15,7))
-ax=sns.scatterplot(data=df, y='MonthlyCharges', x='tenure', hue='Churn', palette='cubehelix_r')
-ax.set_xlabel("Months with company")
-ax.set_title("Monthly Charges Over Time");
+f=plt.subplots(figsize=(5,6))
+ax=sns.countplot(data=df, x='dependents', hue='churn')
+ax.set_ylabel('')    
+ax.set_xlabel('')
+ax.set_title("Churn by Dependents");
+
+
+f=plt.subplots(figsize=(5,6))
+ax=sns.countplot(data=df, x='online_security', hue='churn')
+ax.set_ylabel('')    
+ax.set_xlabel('')
+ax.set_title("Churn by Security");
 
 
 
