@@ -12,7 +12,7 @@
   - [Acknowledgements](#acknowledgements)
   
 
-![](img/mind_blown.gif)
+![](img/mind-blown.gif)
 
 ## Introduction
 
