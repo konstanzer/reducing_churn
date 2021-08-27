@@ -71,6 +71,10 @@ def chi2_significance(df, y, col_start=1, col_end=None):
     return insignificant_variables
 
 
+def bar_plot():
+    pass
+
+
 def output_preds(model, X_test, y_test, cid):
     #Print test results and save predictions
     y_pred = model.predict(X_test)

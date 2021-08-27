@@ -54,7 +54,7 @@ def telco_eda_prep():
     
     telco = get_telco_data()
     
-    telco = telco.drop(['customer_id'], axis=1)
+    telco = telco.drop(['customer_id', 'senior_citizen'], axis=1)
     
     #before making total charges a float, eliminate this annoying space
     telco = telco.replace(" ", 0)
