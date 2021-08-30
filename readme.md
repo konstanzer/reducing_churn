@@ -5,7 +5,6 @@
 - [Data](#datadict)
 - [Hypotheses](#hypotheses)
 - [Planning pipeline](#pipeline)
-- [Method](#method)
 - [Results](#results)
 - [Recommendations](#recommendations)
 
@@ -44,90 +43,140 @@ Customers using e-checks leave at a higher rate than the others. This was a good
 
 ![](img/hist_pay.png)
 
+A look at correlations between features. Notice the white squares indicating the highest correlations, which is addressed in preprocessing.
+
+![](img/corr.png)
+
 ## Hypotheses
 
 #### Chi-Squared contingency tables
 
-$H_0$ Gender is independent of churn.
+$ H_0 $ Gender is independent of churn.
 
-$H_1$ Churn depends on gender.
+$ H_1 $ Churn depends on gender.
+
+I rant chi-squared test for every variable but here I've only included the two in which the null hypothesis was not rejected.
 
 Bonferroni correction = 4
+
 chi^2 = 0.484
+
 p     = 0.9999
 
 **Conclusion: Do not reject the null.** Gender is independent of churn.
 
-$H_0$ Phone service is independent of churn.
+$ H_0 $ Phone service is independent of churn.
 
-$H_1$ Churn depends on phone service.
+$ H_1 $ Churn depends on phone service.
 
 Bonferroni correction = 4
+
 chi^2 = 0.915
+
 p     = 0.9999
 
 **Conclusion: Do not reject the null.** Phone service is independent of churn.
 
 #### Pearson's correlation
 
-$H_0$ There is no linear correlation between monthly charges and months tenure.
+$ H_0 $ There is no linear correlation between monthly charges and months tenure.
 
-$H_1$ There is a linear correlation between monthly charges and months tenure.
+$ H_1 $ There is a linear correlation between monthly charges and months tenure.
+
+
+Here is the rather dubious correlation. This result can easily be mininterpreted due to **survivoship bias**. It's not accurate to say customer's are willing to pay more over time because customers who are not don't stick around.
 
 ![](img/scatter.png)
 
 Pearson correlation = 0.248
+
 p-value             = 0.000
 
 **Conclusion: Reject the null.** There is a linear correlation between monthly charges and months tenure.
 
 #### McNemar's test
 
-$H_0$ *Logistic regression* and *random forest* disagree to the same amount.
-
-$H_1$ There is evidence that the cases disagree in different ways, that the disagreements are skewed.
-
-McNemar's t-stat = 3.2
-p-value          = 0.07
-
-**Conclusion: Reject the null** (at alpha=0.10.) The models are making different predictions.
-
-$H_0$ *Logistic regression* and *decision tree* disagree to the same amount.
-
-$H_1$ There is evidence that the cases disagree in different ways, that the disagreements are skewed.
-
-McNemar's t-stat = 0.12
-p-value          = 0.73
-
-**Conclusion: Do not reject the null** (at alpha=0.10.) The models disagree to the same amount.
-
-McNemar’s test operates upon a contingency table similar to Chi-Squared. In fact, the test statistic has a Chi-Squared distribution with 1 degree of freedom. McNemar’s test is a paired nonparametric or distribution-free statistical hypothesis test. The test is checking if the disagreements between two cases match. Here is how the statistic is calculated.
+McNemar’s test operates upon a contingency table similar to chi-squared. In fact, the test statistic has a Chi-Squared distribution with 1 degree of freedom. McNemar’s test is a paired nonparametric or distribution-free statistical hypothesis test. The test is checking if the disagreements between two cases match. Here is how the statistic is calculated.
 
 test statistic = (Yes/No - No/Yes)^2 / (Yes/No + No/Yes)
 
 where Yes/No is the count of test instances that Classifier 1 got correct and Classifier 2 got incorrect, and No/Yes is the count of test instances that Classifier 1 got incorrect and Classifier 2 got correct, assuming a minimum of 25 of each.
 
+$ H_0 $ *Logistic regression* and *random forest* disagree to the same amount.
+
+$ H_1 $ There is evidence that the cases disagree in different ways, that the disagreements are skewed.
+
+McNemar's t-stat = 3.2
+
+p-value          = 0.07
+
+**Conclusion: Reject the null** (at alpha=0.10.) The models are making different predictions.
+
+$ H_0 $ *Logistic regression* and *decision tree* disagree to the same amount.
+
+$ H_1$  There is evidence that the cases disagree in different ways, that the disagreements are skewed.
+
+McNemar's t-stat = 0.12
+
+p-value          = 0.73
+
+**Conclusion: Do not reject the null** (at alpha=0.10.) The models disagree to the same amount.
+
 ![](chi1_table/.png)
 
 ## Planning pipeline
 
-## Method
+Step 1: Plan
 
-1. Load Telco data (acquire.py).
+*Business objective:* reduce churn by 5 percent.
+*Project objective:* maximize F1 score.
 
-2. Convert all features to numeric (prepare.py).
+Why F1? Because predicting the positive class correctly has more business value than predicting the negative class correctly. Consider this table of costs:
 
-3. Drop highly mulitcollinear features - *monthly charges* and *total charges* - and features independent of churn - *gender* and *phone service*.
+| actual/predicted | churn | stay |
+| - | - | - |
+| churns | no cost | customer stays w/ additional action |
+| stays | lose customer w/o action | no cost |
 
-![](img/corr.png)
+In this case, the **false positive** is a small in cost compared to a **false negative**.
 
+Step 2: Acquire
+
+If data is in a SQL database, run select * from telco_churn.customers via SQL IDE.
+If data is a csv file, use pandas, e.g. pandas.read_csv().
+These steps are covered in acquire.py.
+
+Step 3: Prepare Data
+
+There are no missing values.
+Convert all features to floats or categorical variables using one-hot encoding.
+Split data into 70/15/15 training/validation/test sets.
+These steps are covered in prepare.py.
+
+Drop highly mulitcollinear features - *monthly charges* and *total charges* - and features independent of churn - *gender* and *phone service*. Here are the variable inflation factors without dropping the aforementioned variables.
+ 
 ![](img/vif.png)
 
-4. Train/validation/test split is 70/15/15.
 
-5. Oversample minority class in training data with SMOTE.
+Step 4: Explore & Preprocess
 
-6. Fit sklearn's *decision tree classifier* with ccp_alpha=.007.
+Visualize attributes & interactions (Python: seaborn and matplotlib).
+Analyze: statistically and more generally (Python: statsmodels, numpy, scipy, scikit-learn).
+
+A note on feature Engineering: Two attempts at feature engineering resulted in multicollinear variables with no improvement in models' predictions.
+
+Step 5: Model
+
+Train on minority oversampled data using SMOTE.
+
+Models used
+
+* Logistic Regression (reduced feature selection: tenure, month-to-month, e-check, fiber optic)
+* Random Forest (hyperparameters: ccp_alpha = .003)
+* Decision tree (hyperparameters: ccp_alpha = .007)
+* KNN (hyperparameters: n_neighbors = 18)
+
+As an additional step, I used McNemar's test to compare models. The model used to output predictins was the decision tree
 
 ## Results
 
