@@ -1,14 +1,13 @@
 <img src="img/logo.png" width="300"/>
 
 ---
-- [To churn or not to churn, that is the question.](#churn)
-  - [Introduction](#introduction)
-  - [Data](#datadict)
-  - [Hypotheses](#hypotheses)
-  - [Planning pipeline](#pipeline)
-  - [Method](#method)
-  - [Results](#results)
-  - [Recommendations](#recommendations)
+- [Introduction](#introduction)
+- [Data](#datadict)
+- [Hypotheses](#hypotheses)
+- [Planning pipeline](#pipeline)
+- [Method](#method)
+- [Results](#results)
+- [Recommendations](#recommendations)
 
 ## Introduction
 
@@ -18,19 +17,31 @@ Customer's leaving, or churning, is a common problem in the telecommunications i
 
 The data contains information about 7,043 customers, specifically:
 
-    **Customers who left within the last month** – the column is called churn. 1,869 customers did it
+**Customers who left within the last month** – the column is called churn. 1,869 customers did it
 
-    ![](img/pie.png)
+![](img/pie.png)
 
-    **Services that each customer has signed up for** – phone, multiple lines, internet, online security, online backup, device protection, tech support, and streaming TV and movies
+**Services that each customer has signed up for** – phone, multiple lines, internet, online security, online backup, device protection, tech support, and streaming TV and movies
 
-    **Customer account information** - how long they’ve been a customer, contract, payment method, paperless billing, monthly charges, and total charges
+**Customer account information** - how long they’ve been a customer, contract, payment method, paperless billing, monthly charges, and total charges
 
-    **Demographic info about customers** – gender, age range, and if they have partners and dependents
+**Demographic info about customers** – gender, age range, and if they have partners and dependents
+
+Customers are price sensitive. No surprise there but it turns out high monthly bills are driven by fiber optic plans.  The average customer pays 65 USD per month and has been with the company for 32 months. The median customers pays more (70 USD) but hasn't been a customer as long (29 months.)
+
 
 ![](img/density.png)
+
+Month-to-month customers churn at a mich higher rate than customers on yearly plans. Across all models, this was the best feature for predicting customer retention.
+
 ![](img/hist_contract.png)
+
+Fiber optic usage was the second best feature and it turns out to be highly correlated with monthly charges because it's dang expensive.
+
 ![](img/hist_inter.png)
+
+Customers using e-checks leave at a higher rate than the others. This was a good feature for logistic regression
+
 ![](img/hist_pay.png)
 
 ## Hypotheses
@@ -122,7 +133,7 @@ where Yes/No is the count of test instances that Classifier 1 got correct and Cl
 
 #### Did we do better than the baseline?
 
-The basline predicts every customer leaves every month, not terrribly intelligent.
+The baseline predicts every customer leaves every month, not terrribly intelligent.
 
 *"A theory that explains everything, explains nothing." -Karl Popper*
 
@@ -132,14 +143,18 @@ The basline predicts every customer leaves every month, not terrribly intelligen
 
 * After: Out of 100 customers, picks out 40 and this subset includes 20 of 25 churning customers.
 
+The model's predictions can be thought of as a concentrated solution putting more high-risk customers in a smaller subset.
+
 ![](img/dilute.png)
 
-| --- | precision | recall | F1 | accuracy
+| model | precision | recall | F1 | accuracy
 | --- | --- | --- | --- | --- |
 | baseline | .26 | 1 | .42 | .26 |
 | tree | .52 | .79 | .63 | .75 |
 
-![](img/tree.jpg)
+ A note on model selection: Logistic regression produced similar results. In fact, McNemar's test showed no difference in the distribution of predictions. The choice of a decision tree came down to interpretability and it's overwhelmingly simple classification process, which asks only three questions:
+
+<img src="img/tree.jpg" width="500"/>
 
 ![](img/mind-blown.gif)
 
