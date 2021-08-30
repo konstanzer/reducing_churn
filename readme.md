@@ -53,45 +53,40 @@ A look at correlations between features. Notice the white squares indicating the
 
 #### Chi-Squared contingency tables
 
-H~0~ Gender is independent of churn.
+##### H<sub>0</sub> Gender is independent of churn.
 
-H~1~ Churn depends on gender.
+##### H<sub>1</sub> Churn depends on gender.
 
 I ran a chi-squared test for every variable but here I've only included the two in which the null hypothesis was not rejected, meaning all other variable distributions indicated a relationship with churn.
 
-Bonferroni correction = 4
-
-chi^2 = 0.484
-
-p     = 0.9999
+* Bonferroni correction = 4
+* chi^2 = 0.484
+* p     = 0.9999
 
 **Conclusion: Do not reject the null.** Gender is independent of churn.
 
-H~0~ Phone service is independent of churn.
+##### H<sub>0</sub> Phone service is independent of churn.
 
-H~1~ Churn depends on phone service.
+##### H<sub>1</sub> Churn depends on phone service.
 
-Bonferroni correction = 4
-
-chi^2 = 0.915
-
-p     = 0.9999
+* Bonferroni correction = 4
+* chi^2 = 0.915
+* p     = 0.9999
 
 **Conclusion: Do not reject the null.** Phone service is independent of churn.
 
 #### Pearson's correlation
 
-H~0~ There is no linear correlation between monthly charges and months tenure.
+##### H<sub>0</sub> There is no linear correlation between monthly charges and months tenure.
 
-H~1~ There is a linear correlation between monthly charges and months tenure.
+##### H<sub>1</sub> There is a linear correlation between monthly charges and months tenure.
 
 Here is the rather dubious correlation. This result can easily be mininterpreted due to **survivoship bias**. It's not accurate to say customer's are willing to pay more over time because customers who are not don't stick around.
 
 ![](img/scatter.png)
 
-Pearson correlation = 0.248
-
-p-value             = 0.000
+* Pearson correlation = 0.248
+* p-value             = 0.000
 
 **Conclusion: Reject the null.** There is a linear correlation between monthly charges and months tenure.
 
@@ -103,25 +98,23 @@ test statistic = (Yes/No - No/Yes)^2 / (Yes/No + No/Yes)
 
 where Yes/No is the count of test instances that Classifier 1 got correct and Classifier 2 got incorrect, and No/Yes is the count of test instances that Classifier 1 got incorrect and Classifier 2 got correct, assuming a minimum of 25 of each.
 
-H~0~ *Logistic regression* and *random forest* disagree to the same amount.
+##### H<sub>0</sub> *Logistic regression* and *random forest* disagree to the same amount.
 
-H~1~ There is evidence that the cases disagree in different ways, that the disagreements are skewed.
+##### H<sub>1</sub> There is evidence that the cases disagree in different ways, that the disagreements are skewed.
 
-McNemar's t-stat = 3.2
-
-p-value          = 0.07
+* McNemar's t-stat = 3.2
+* p-value          = 0.07
 
 **Conclusion: Reject the null** (at alpha=0.10.) The models are making different predictions.
 
-H~0~ *Logistic regression* and *decision tree* disagree to the same amount.
+##### H<sub>0</sub> *Logistic regression* and *decision tree* disagree to the same amount.
 
-H~1~  There is evidence that the cases disagree in different ways, that the disagreements are skewed.
+##### H<sub>1</sub>  There is evidence that the cases disagree in different ways, that the disagreements are skewed.
 
-McNemar's t-stat = 0.12
+* McNemar's t-stat = 0.12
+* p-value          = 0.73
 
-p-value          = 0.73
-
-**Conclusion: Do not reject the null** (at alpha=0.10.) The models disagree to the same amount.
+**Conclusion: Do not reject the null** at alpha egual to 0.10. The models disagree to the same amount.
 
 ![](img/chi2_table.png)
 
@@ -131,16 +124,16 @@ Step 1: Plan
 
 *Business objective:* reduce churn by 5 percent.
 
-*Project objective:* maximize F1 score.
+*Project objective:* maximize F1 score for the positive (churn) class.
 
-Why F1? Because predicting the positive class correctly has more business value than predicting the negative class correctly. Consider this table of costs:
+Why F1 and not accuracy? Because predicting the positive class correctly has more business value than predicting the negative class correctly. Consider this table of costs:
 
 | actual/predicted | churn | stay |
 | - | - | - |
 | churns | no cost | customer stays w/ additional action |
 | stays | lose customer w/o action | no cost |
 
-In this case, the **false positive** is a small in cost compared to a **false negative**.
+In this case, the **false negative** has significantly greater cost compared to a **false positive** and th metric choice should reflect that,
 
 Step 2: Acquire
 
@@ -164,7 +157,7 @@ Step 4: Explore & Preprocess
 Visualize attributes & interactions (Python: seaborn and matplotlib).
 Analyze: statistically and more generally (Python: statsmodels, numpy, scipy, scikit-learn).
 
-A note on feature Engineering: Two attempts at feature engineering resulted in multicollinear variables with no improvement in models' predictions.
+A note on feature engineering: Two attempts at feature engineering resulted in multicollinear variables with no improvement in models' predictions. One was bins for monthly charges and the second was a binary variable indicating contract expiration month.
 
 Step 5: Model
 
@@ -177,14 +170,14 @@ Models used:
 * Decision tree (hyperparameters: ccp_alpha = .007)
 * kNN (hyperparameters: n_neighbors = 18)
 
-As an additional step, I used McNemar's test to compare models. The model used to output predictins was the decision tree
+As an additional step, I used McNemar's test to compare models and found logistic regression and the decision tree produced predictions without a meaningful difference. The model used to output predictions was the decision tree
 
 
 ## Results
 
 #### Did we do better than the baseline?
 
-The baseline predicts every customer leaves every month, not terrribly intelligent.
+The baseline predicts every customer leaves every month; not terrribly intelligent. (Were I maximizing for accuracy, I'd predict every customer stays but, as discussed above, the business value lies in predicting churn (positive class) and not predicting retention (negative class).)
 
 *"A theory that explains everything, explains nothing." -Karl Popper*
 
@@ -194,7 +187,7 @@ The baseline predicts every customer leaves every month, not terrribly intellige
 
 * After: Out of 100 customers, picks out 40 and this subset includes 20 of 25 churning customers.
 
-The model's predictions can be thought of as a concentrated solution putting high-risk customers in a smaller subset.
+The model's predictions can be thought of as a concentrated solution putting (most) high-risk customers in a smaller subset.
 
 ![](img/dilute.png)
 
@@ -203,7 +196,7 @@ The model's predictions can be thought of as a concentrated solution putting hig
 | baseline | .26 | 1 | .42 | .26 |
 | tree | .52 | .79 | .63 | .75 |
 
- A note on model selection: Logistic regression produced similar results. In fact, McNemar's test showed no difference in the distribution of predictions. The choice of a decision tree came down to interpretability and it's overwhelmingly simple classification process, which asks only three questions:
+A note on model selection: Logistic regression produced similar results. In fact, McNemar's test showed no difference in the distribution of predictions. The choice of a decision tree came down to interpretability and it's overwhelmingly simple classification process, which asks only three questions:
 
 <img src="img/tree.jpg" width="450"/>
 
